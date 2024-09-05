@@ -1,0 +1,50 @@
+class TF_Plant2DecorativeSmall : Plant2DecorativeSmall replaces Plant2DecorativeSmall {
+	states {
+		TRIANGLE:
+			PLTT A -1 {
+				A_SpriteOffset(-9.0, -16.0);
+				A_SetScale(0.28, 0.28);
+			}
+			loop;
+		CIRCLE:
+			PLTC A -1 {
+				A_SpriteOffset(-9.0, -15.0);
+				A_SetScale(0.28, 0.28);
+			}
+			loop;
+	}
+}
+
+class TriangleFactoryOverrideHandler : StaticEventHandler
+{
+	int wait;
+
+	override void OnRegister() {
+		console.printf("TriangleFactoryOverrideHandler registered");
+		wait = 8;
+	}
+
+	override void WorldThingSpawned(WorldEvent e) {
+		if(!e.Thing) { return; }
+		if(e.Thing.CheckClass('TF_Plant2DecorativeSmall', AAPTR_DEFAULT, true)) {
+			let nearbymachine = false;
+			int radius = 400;
+			ThinkerIterator it = ThinkerIterator.Create("PlantPotPlantMachine");
+			PlantPotPlantMachine machine = PlantPotPlantMachine(it.Next());
+			for (; machine; machine = PlantPotPlantMachine(it.Next())) {
+				if(e.Thing.Distance2DSquared(machine) <= radius) {
+					nearbymachine = true;
+				}
+			}
+			if (nearbymachine) {
+				wait -= 1;
+				if (wait <= 0) {
+					wait = 10 + random(0, 5);
+					e.Thing.setStateLabel("CIRCLE");
+				} else {
+					e.Thing.setStateLabel("TRIANGLE");
+				}
+			}
+		}
+    }
+}
